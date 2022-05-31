@@ -18,10 +18,11 @@ rpc.makeRPC = async (url, method, params) => {
                 "id": 0
             }),
         });
-        console.log(await response);
-        ({result} = await response.json())
+        ({ result } = await response.json());
     }
-    catch (err) {}
+    catch (err) {
+        throw err
+    }
     return result
 }
 
@@ -39,7 +40,10 @@ rpc.getFacade = async (url) => {
 }
 
 // Default to the block that dmap was deployed
-rpc.getPastEvents = async(url, address, fromBlock=14691764, toBlock='latest') => {
-    console.log("!!!!!!!!!!!!!")
-    return await rpc.makeRPC(url, "eth_getLogs", [{address: address, fromBlock: fromBlock, toBlock: toBlock}])
+// TODO: Filter on topic
+rpc.getPastEvents = async(url, address, fromBlock='0xe02db4', toBlock='latest') => {
+    return await rpc.makeRPC(url, "eth_getLogs", [{address: address, 
+        fromBlock: fromBlock, 
+        toBlock: toBlock, 
+    }])
 }
