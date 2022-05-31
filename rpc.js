@@ -46,3 +46,7 @@ rpc.getPastEvents = async(url, address, topics, fromBlock='0xe02db4', toBlock='l
         topics: topics
     }])
 }
+
+rpc.getBlock = async(url, block) => {
+    return await rpc.makeRPC(url, "eth_getBlockByNumber", [block, false])
+}

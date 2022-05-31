@@ -41,13 +41,19 @@ const look = async (path) => {
         [meta, data] = trace.slice(-1)[0];
         let name = _getNameFromPath(path);
         name = '0x' + lib._strToHex(name) + '0'.repeat(64 - name.length * 2)
+        // Should only do this if meta is locked
         let events = await rpc.getPastEvents(config.eth_rpc, lib.address,[
             null, // TODO: DMFXYZ filter on zone/caller address as well,
             name,
             null,
             null
         ]);
-        console.log(events);
+        // TODO: !DMFXYZ! Double check sorting logic
+        events.sort((e1, e2) => {
+            return BigInt(e1.blockNumber) - BigInt(e2.blockNumber)
+        })
+        let timestamp = (await rpc.getBlock(config.eth_rpc, events.reverse()[0].blockNumber)).timestamp
+        console.log(parseInt(timestamp))
         save(trace)
     }
     console.log(meta, data)
