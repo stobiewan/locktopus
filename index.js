@@ -41,7 +41,7 @@ const look = async (path) => {
         [meta, data] = trace.slice(-1)[0];
         // TODO: filter on topic in rpc call
         let events = await rpc.getPastEvents(config.eth_rpc, lib.address);
-        console.log(events)
+        //console.log(events)
         save(trace)
     }
     console.log(meta, data)
