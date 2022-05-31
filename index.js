@@ -39,12 +39,26 @@ const look = async (path) => {
         const dmap = await rpc.getFacade(config.eth_rpc);
         const trace = await lib.walk2(dmap, path);
         [meta, data] = trace.slice(-1)[0];
-        // TODO: filter on topic in rpc call
-        let events = await rpc.getPastEvents(config.eth_rpc, lib.address);
-        //console.log(events)
+        let name = _getNameFromPath(path);
+        name = '0x' + lib._strToHex(name) + '0'.repeat(64 - name.length * 2)
+        let events = await rpc.getPastEvents(config.eth_rpc, lib.address,[
+            null, // TODO: DMFXYZ filter on zone/caller address as well,
+            name,
+            null,
+            null
+        ]);
+        console.log(events);
         save(trace)
     }
     console.log(meta, data)
+}
+
+function _getNameFromPath(path) {
+    if(path.lastIndexOf(".") > path.lastIndexOf(':')) {
+        return path.substring(path.lastIndexOf('.') + 1)
+    } else {
+        return path.substring(path.lastIndexOf(':') + 1)
+    }
 }
 
 program.parse();
