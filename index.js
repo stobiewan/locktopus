@@ -61,7 +61,6 @@ const look = async (path) => {
         let when = 0
         const dmap = await rpc.getFacade(config.eth_rpc)
         const trace = await lib.walk2(dmap, path);
-<<<<<<< HEAD
         [meta, data] = trace.slice(-1)[0];
         let name = _getNameFromPath(path);
         name = '0x' + lib._strToHex(name) + '0'.repeat(64 - name.length * 2)
@@ -76,18 +75,12 @@ const look = async (path) => {
         events.sort((e1, e2) => {
             return BigInt(e1.blockNumber) - BigInt(e2.blockNumber)
         })
-        let timestamp = (await rpc.getBlock(config.eth_rpc, events.reverse()[0].blockNumber)).timestamp
-        console.log(parseInt(timestamp))
-        save(trace)
-=======
-        [meta, data] = trace.slice(-1)[0]
+        when = parseInt(await rpc.getBlock(config.eth_rpc, events.reverse()[0].blockNumber)).timestamp
         save(meta, data, trace, path, when)
->>>>>>> integration
     }
     console.log(`meta: ${meta}\ndata: ${data}`)
 }
 
-<<<<<<< HEAD
 function _getNameFromPath(path) {
     if(path.lastIndexOf(".") > path.lastIndexOf(':')) {
         return path.substring(path.lastIndexOf('.') + 1)
@@ -96,7 +89,5 @@ function _getNameFromPath(path) {
     }
 }
 
-=======
 process.on('exit', () => db.close())
->>>>>>> integration
 program.parse();
