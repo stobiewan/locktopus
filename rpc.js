@@ -35,7 +35,7 @@ rpc.getFacade = async (url) => {
     const storageFunction = rpc.RPCGetStorage.bind(null, url)
 
     return { provider: { getStorageAt:storageFunction },
-        address: lib.address
+             address : lib.address
     }
 }
 

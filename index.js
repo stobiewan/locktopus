@@ -1,19 +1,30 @@
+import process from 'node:process'
 import { Command } from 'commander'
-import  lib  from './lib/dmap/dmap.js'
+import Database from 'better-sqlite3'
+import lib from './lib/dmap/dmap.js'
 import { rpc }  from './rpc.js'
 import { jams } from 'jams.js'
-import { readFileSync } from 'fs'
+import { existsSync, mkdirSync, readFileSync } from 'fs'
 import os from 'os'
-const program = new Command();
+
 let config = {}
+const program = new Command();
+
+const dir = `${os.homedir()}/.locktopus`
+if (!existsSync(dir)) mkdirSync(dir)
+const db = new Database(`${dir}/locktopus.sqlite`, { verbose: console.log })
+const create = db.prepare("CREATE TABLE IF NOT EXISTS locks(" +
+    "'when' INTEGER, 'zone' TEXT, 'name' TEXT,'path' TEXT PRIMARY KEY, 'meta' TEXT, 'data' TEXT )")
+create.run();
 
 program
     .name('dmap')
     .description('dmap interface tools')
     .version('0.1.0')
-    .option('-c, --config-file <string>', 'path to your jams config file', `${os.homedir()}/.locktopus/config.jams`)
+    .option('-c, --config-dir <string>', 'path to your jams config file',
+            dir)
     .hook('preAction', (_, __) => {
-        config = jams(readFileSync(program.opts().configFile, {encoding: 'utf-8'}))
+        config = jams(readFileSync(`${program.opts().configDir}/config.jams`, {encoding: 'utf-8'}))
     });
 
 program.command('walk')
@@ -24,20 +35,33 @@ program.command('walk')
     });
 
 const seek = (path) => {
-    let hit = false
+    let miss = true
     let meta, data
-    return [hit, meta, data]
+    const stmt = db.prepare('SELECT * FROM locks WHERE path = ?')
+    const lock = stmt.get(path)
+    if (lock !== undefined) {
+        miss = false
+        meta = lock.meta
+        data = lock.data
+    }
+    return [miss, meta, data]
 }
 
-const save = (trace) => {
-    console.log(trace)
+const save = (meta, data, trace, path, when) => {
+    if ((lib._hexToArrayBuffer(meta)[31] & lib.FLAG_LOCK) === 0) return
+    const zone = trace.length > 1 ? trace.slice(-2)[0][1] : '0x' + '0'.repeat(64)
+    const name = path.split(/[:.]/).slice(-1)[0]
+    const insert = db.prepare('INSERT INTO locks VALUES (@when, @zone, @name, @path, @meta, @data)')
+    insert.run({ when: when, zone: zone, name: name, path: path, meta: meta, data: data })
 }
 
 const look = async (path) => {
-    let [hit, meta, data] = seek(path)
-    if (!hit) {
-        const dmap = await rpc.getFacade(config.eth_rpc);
+    let [miss, meta, data] = seek(path)
+    if (miss) {
+        let when = 0
+        const dmap = await rpc.getFacade(config.eth_rpc)
         const trace = await lib.walk2(dmap, path);
+<<<<<<< HEAD
         [meta, data] = trace.slice(-1)[0];
         let name = _getNameFromPath(path);
         name = '0x' + lib._strToHex(name) + '0'.repeat(64 - name.length * 2)
@@ -55,10 +79,15 @@ const look = async (path) => {
         let timestamp = (await rpc.getBlock(config.eth_rpc, events.reverse()[0].blockNumber)).timestamp
         console.log(parseInt(timestamp))
         save(trace)
+=======
+        [meta, data] = trace.slice(-1)[0]
+        save(meta, data, trace, path, when)
+>>>>>>> integration
     }
-    console.log(meta, data)
+    console.log(`meta: ${meta}\ndata: ${data}`)
 }
 
+<<<<<<< HEAD
 function _getNameFromPath(path) {
     if(path.lastIndexOf(".") > path.lastIndexOf(':')) {
         return path.substring(path.lastIndexOf('.') + 1)
@@ -67,4 +96,7 @@ function _getNameFromPath(path) {
     }
 }
 
+=======
+process.on('exit', () => db.close())
+>>>>>>> integration
 program.parse();
