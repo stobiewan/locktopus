@@ -7,6 +7,12 @@ beforeEach(() => {
     jest.clearAllMocks()
 })
 
+test('dummy test', () => {
+    rpc.makeRPC = jest.fn(() => "locktopus");
+    const result = rpc.makeRPC(null, null, null)
+    expect(result).toBe('locktopus')
+})
+
 test('get block', () => {
     rpc.makeRPC = jest.fn()
     rpc.getBlock(dummy_url, '10')
@@ -35,3 +41,21 @@ test('get storage', () => {
         [address, slot, 'latest']
     )
 })
+
+// TODO: Get this internal mock working
+// jest.mock('node-fetch', () => jest.fn())
+// test('make rpc', () => {
+//     rpc.makeRPC(dummy_url, 'eth_dummyMethod', [])
+//     expect(fetch).toHaveBeenCalledWith(dummy_url, {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': "application/json",
+//         },
+//         body: JSON.stringify({
+//             "jsonrpc": "2.0",
+//             "method": "eth_dummyMethod",
+//             "params": [],
+//             "id": 0
+            
+//         })});
+//     })
