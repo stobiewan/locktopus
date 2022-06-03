@@ -7,12 +7,6 @@ beforeEach(() => {
     jest.clearAllMocks()
 })
 
-test('dummy test', () => {
-    rpc.makeRPC = jest.fn(() => "locktopus");
-    const result = rpc.makeRPC(null, null, null)
-    expect(result).toBe('locktopus')
-})
-
 test('get block', () => {
     rpc.makeRPC = jest.fn()
     rpc.getBlock(dummy_url, '10')
