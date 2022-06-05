@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals'
 import { locktopus } from '../locktopus.js'
-import { dummy_url, dummy_trace } from './test-constants.js'
+import { dummy_url, dummy_trace, dummy_trace_locked } from './test-constants.js'
 import { rpc } from '../rpc.js'
 import lib from '../lib/dmap/dmap.js'
 import fs from 'fs'
@@ -28,3 +28,10 @@ test('test init last', async () => {
     )
 })
 
+test('test look unlocked', async () => {
+    lib.walk2 = jest.fn()
+    lib.walk2.mockReturnValueOnce(dummy_trace)
+    const save = jest.spyOn(locktopus, 'save')
+    await locktopus.look('free.bird')
+    expect(save).not.toHaveBeenCalled()
+})
